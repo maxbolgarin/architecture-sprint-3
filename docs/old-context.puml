@@ -1,0 +1,13 @@
+' https://github.com/plantuml-stdlib/C4-PlantUML
+
+@startuml SmartHome_Old_context
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User", "People who want to control home")
+System(sensors, "User's Sensors", "Sensors that locate inside user's home")
+System(backend, "SmartHome Backend", "System that handles user requests and controls sensors")
+
+Rel(user, backend, "Heating control, temperature monitoring")
+Rel(backend, sensors, "Sensors control")
+
+@enduml
