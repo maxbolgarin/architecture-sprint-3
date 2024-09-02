@@ -1,0 +1,94 @@
+' https://plantuml.com/ie-diagram
+
+@startuml SmartHome_New_erd
+
+entity "User" as user {
+  *user_id: varchar
+  --
+  *user_name: text
+}
+
+entity "UserAuth" as user_auth {
+  *user_id: varchar
+  --
+  *email: text
+  *password_hash: text  
+}
+
+entity "House" as house {
+  *house_id: varchar
+  *user_id: varchar
+  --
+  *house_name: text
+  house_description: text
+}
+
+entity "Device" as device {
+  *device_id: varchar
+  *house_id: varchar
+  *type_id: varchar
+  --
+  *device_name: text
+  device_description: text
+}
+
+entity "DeviceType" as device_type {
+  *type_id: varchar
+  *manufactor: text
+  *model_name: text
+  *is_custom: bool
+  --
+  metric_ids: []text
+  command_ids: []text
+}
+
+entity "MetricType" as metric_type {
+  *metric_type_id: varchar
+  *metric_name: text
+  *metric_type: enum(counter,gauge,hist)
+  --
+  metric_description: text
+}
+
+entity "CommandType" as command_type {
+  *command_type_id: varchar
+  *command_name: text
+  *command_type: enum(plain,code)
+  --
+  code: text
+  command_description: text
+}
+
+entity "Telemetry" as telemetry {
+  *device_id: varchar
+  *metric_type_id: varchar
+  --
+  *time: timestamp
+  *value: number
+}
+
+entity "CommandHistory" as command_history {
+  *command_id: varchar
+  *device_id: varchar
+  *command_type_id: varchar
+  --
+  *create_time: timestamp
+  send_time: timestamp
+  command_type: enum(plain,code)
+  code: text
+}
+
+user ||--|| user_auth
+user ||--|{ house
+house ||--|{ device
+device }|--|| device_type
+device_type }|--|{ metric_type
+device_type }|--|{ command_type
+
+device ||--|{ telemetry
+metric_type ||--|{ telemetry
+
+device ||--|{ command_history
+command_type ||--|{ command_history
+
+@enduml
