@@ -1,0 +1,66 @@
+@startuml SmartHome_New_components
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container(webApp, "Web Aplication", "TypeScript,Vue3", "Provides functionallity in browsers")
+Container(mobileApp, "Mobile Aplications", "Kotlin,Java,Swift", "Provides all functionallity on smartphones")
+
+System_Boundary(c1, "Main backend") {
+    Component(apiGate, "API Gateway", "kong", "Load balance and auth all external requests")
+
+    Component(usersMicro, "Users microservice", "go", "Handle user interactions")
+    ComponentDb(usersDb, "Users database", "PostgreSQL", "Store users information")
+
+    Component(housesMicro, "Houses microservice", "go", "Handle house entity")
+    ComponentDb(housesDb, "Houses database", "PostgreSQL", "Store house information")
+
+    Component(devicesMicro, "Devices microservice", "go", "Handle device entity")
+    ComponentDb(devicesDb, "Devices database", "PostgreSQL", "Store device information")
+
+    Component(metaMicro, "DeviceTypes microservice", "go", "Handle device types entity")
+    ComponentDb(metaDb, "DeviceTypes database", "PostgreSQL", "Store device types information")
+
+    Component(monolith, "Old Smart House monolith", "java", "Handle high level interactions")
+
+    Component(commandsMicro, "Commands microservice", "go", "Handle commands interactions")
+    ComponentDb(commandsDb, "Commands database", "PostgreSQL", "Store commands information")
+
+    Component(telemetryMicro, "Telemetry microservice", "go", "Process telemetry data")
+    ComponentDb(telemetryDb, "Telemetry database", "PostgreSQL", "Store telemetry")
+    ComponentQueue(kafka, "Message broker", "kafka", "Interaction with sensors")
+}
+System_Ext(sensors, "User's Sensors", "Sensors that locate inside user's home")
+
+Rel(webApp, apiGate, "User API calls", "https")
+Rel(mobileApp, apiGate, "User API calls", "https")
+Rel(sensors, apiGate, "Fetch new commands for sensors", "https")
+Rel(sensors, apiGate, "Send sensors telemetry", "https")
+
+Rel(apiGate, usersMicro, "API calls for users", "http")
+Rel(usersMicro, usersDb, "CRUD", "tcp")
+
+Rel(apiGate, housesMicro, "CRUD houses", "http")
+Rel(housesMicro, housesDb, "CRUD", "tcp")
+
+Rel(apiGate, devicesMicro, "CRUD devices", "http")
+Rel(devicesMicro, metaMicro, "Get info for device interpretation", "http")
+Rel(devicesMicro, devicesDb, "CRUD", "tcp")
+
+Rel(apiGate, metaMicro, "CRUD device types", "http")
+Rel(metaMicro, metaDb, "CRUD", "tcp")
+
+Rel(apiGate, monolith, "Send commands and get info", "http")
+Rel(monolith, kafka, "Send commands to handle", "tcp")
+Rel(monolith, telemetryMicro, "Get device info", "http")
+Rel(monolith, metaMicro, "Get info for telemetry/commands interpretation", "http")
+
+Rel(apiGate, commandsMicro, "Fetch new commands from devices", "http")
+Rel(commandsMicro, kafka, "Fetch commands for devices to handle", "tcp")
+Rel(commandsMicro, commandsDb, "Save commands history", "tcp")
+
+Rel(apiGate, kafka, "Send raw telemetry from devices", "http")
+Rel(kafka, telemetryMicro, "Fetch raw telemetry", "http")
+Rel(telemetryMicro, telemetryDb, "Store raw telemetry", "tcp")
+
+
+@enduml
