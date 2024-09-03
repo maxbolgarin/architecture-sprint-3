@@ -14,7 +14,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func StartApp(ctx context.Context, db *DB) {
+func StartApp(ctx context.Context, db *DB) error {
+	_, err := Exec(ctx, db, createCommandsTableQuery)
+	if err != nil {
+		return err
+	}
+
 	mux := mux.NewRouter()
 	out := &app{
 		db: db,
@@ -42,17 +47,13 @@ func StartApp(ctx context.Context, db *DB) {
 	}()
 
 	log.Println("starting server at " + srv.Addr)
+
+	return nil
 }
 
 type app struct {
 	db *DB
 }
-
-const (
-	getForDeviceQuery = "SELECT (command_id, create_time, command_type, code) FROM commands WHERE device_id = $1 AND send_time IS NULL"
-	getHistoryQuery   = "SELECT (command_id, command_type_id, create_time, send_time, command_type, code) FROM commands WHERE device_id = $1 AND create_time > $2"
-	updateSendQuery   = "UPDATE commands SET send_time = now() WHERE device_id = $1 AND command_id = $2"
-)
 
 func (s *app) getForDevice(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -153,3 +154,21 @@ func httpErr(w http.ResponseWriter, code int, err error) {
 	fmt.Fprintln(w, err.Error())
 	log.Println("http error:", err.Error())
 }
+
+const (
+	getForDeviceQuery        = "SELECT (command_id, create_time, command_type, code) FROM commands WHERE device_id = $1 AND send_time IS NULL"
+	getHistoryQuery          = "SELECT (command_id, command_type_id, create_time, send_time, command_type, code) FROM commands WHERE device_id = $1 AND create_time > $2"
+	updateSendQuery          = "UPDATE commands SET send_time = now() WHERE device_id = $1 AND command_id = $2"
+	createCommandsTableQuery = `
+	CREATE TABLE IF NOT EXISTS commands (
+		command_id TEXT NOT NULL,
+		device_id TEXT NOT NULL,
+		command_type_id TEXT NOT NULL,
+		create_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+		send_time TIMESTAMPTZ,
+		command_type TEXT NOT NULL,
+		code TEXT NOT NULL,
+		PRIMARY KEY (command_id)
+	)
+	`
+)

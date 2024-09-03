@@ -22,7 +22,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	StartApp(ctx, db)
+	if err := StartApp(ctx, db); err != nil {
+		log.Fatalln(err)
+	}
 
 	<-ctx.Done()
 }
