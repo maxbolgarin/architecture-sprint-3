@@ -14,7 +14,12 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func StartApp(ctx context.Context, db *DB) {
+func StartApp(ctx context.Context, db *DB) error {
+	_, err := Exec(ctx, db, createTelemetryTableQuery)
+	if err != nil {
+		return err
+	}
+
 	mux := mux.NewRouter()
 	out := &app{
 		db: db,
@@ -41,13 +46,13 @@ func StartApp(ctx context.Context, db *DB) {
 	}()
 
 	log.Println("starting server at " + srv.Addr)
+
+	return nil
 }
 
 type app struct {
 	db *DB
 }
-
-const getTelemetryQuery = "SELECT (value, create_time) FROM telemetry WHERE device_id = $1 AND metric_id = $2 AND create_time >= $3"
 
 func (s *app) get(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
@@ -105,3 +110,17 @@ func httpErr(w http.ResponseWriter, code int, err error) {
 	fmt.Fprintln(w, err.Error())
 	log.Println("http error:", err.Error())
 }
+
+const (
+	getTelemetryQuery         = "SELECT (value, create_time) FROM telemetry WHERE device_id = $1 AND metric_id = $2 AND create_time >= $3"
+	createTelemetryTableQuery = `
+	CREATE TABLE IF NOT EXISTS telemetry (
+		device_id TEXT NOT NULL,
+		metric_id TEXT NOT NULL,
+		create_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+		value INT NOT NULL,
+		PRIMARY KEY (device_id, metric_id, create_time)
+	)
+	`
+)
