@@ -29,7 +29,7 @@ WORKDIR /src
 RUN go mod download
 
 # 3. Build application with CGO_ENABLED=0 to disable cgo and static linking
-RUN CGO_ENABLED=0 go build -v -installsuffix 'static' -o /app/commands .
+RUN CGO_ENABLED=0 go build -installsuffix 'static' -o /app/commands .
 
 
 ### Step 3: create execuitable image
