@@ -5,6 +5,8 @@ spring:
     password: ${DB_PASS}
     hikari:
       allow-pool-suspension: true
+  kafka:
+      bootstrap-servers: ${KAFKA_ADDRESS}
   jpa:
     hibernate:
       ddl-auto: none

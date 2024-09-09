@@ -2,14 +2,27 @@ package ru.yandex.practicum.smarthome.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.kafka.core.KafkaTemplate;
 import ru.yandex.practicum.smarthome.dto.HeatingSystemDto;
+import ru.yandex.practicum.smarthome.dto.CommandDto;
 import ru.yandex.practicum.smarthome.entity.HeatingSystem;
 import ru.yandex.practicum.smarthome.repository.HeatingSystemRepository;
+import ru.yandex.practicum.smarthome.kafka.KafkaProducerConfig;
 
 @Service
 @RequiredArgsConstructor
 public class HeatingSystemServiceImpl implements HeatingSystemService {
     private final HeatingSystemRepository heatingSystemRepository;
+
+    private final KafkaTemplate<String, CommandDto> kafkaTemplate;
+    private final DeviceTypeService deviceTypeService;
+
+    public HeatingSystemServiceImpl(HeatingSystemRepository heatingSystemRepository) {
+        this.heatingSystemRepository = heatingSystemRepository;
+        KafkaProducerConfig kafkaCfg = new KafkaProducerConfig();
+        this.kafkaTemplate = kafkaCfg.kafkaTemplate();
+        this.deviceTypeService = new DeviceTypeService();
+    }
     
     @Override
     public HeatingSystemDto getHeatingSystem(Long id) {
@@ -34,6 +47,8 @@ public class HeatingSystemServiceImpl implements HeatingSystemService {
                 .orElseThrow(() -> new RuntimeException("HeatingSystem not found"));
         heatingSystem.setOn(true);
         heatingSystemRepository.save(heatingSystem);
+
+        this.kafkaTemplate.send("commands", this.deviceTypeService.GetHeatingSystemOnCommand());
     }
 
     @Override
@@ -42,6 +57,8 @@ public class HeatingSystemServiceImpl implements HeatingSystemService {
                 .orElseThrow(() -> new RuntimeException("HeatingSystem not found"));
         heatingSystem.setOn(false);
         heatingSystemRepository.save(heatingSystem);
+
+        this.kafkaTemplate.send("commands", this.deviceTypeService.GetHeatingSystemOffCommand());
     }
 
     @Override
@@ -50,10 +67,13 @@ public class HeatingSystemServiceImpl implements HeatingSystemService {
                 .orElseThrow(() -> new RuntimeException("HeatingSystem not found"));
         heatingSystem.setTargetTemperature(temperature);
         heatingSystemRepository.save(heatingSystem);
+
+        this.kafkaTemplate.send("commands", this.deviceTypeService.GetHeatingSystemSetCommand(temperature));
     }
 
     @Override
     public Double getCurrentTemperature(Long id) {
+        // TODO: get from telemetry service
         HeatingSystem heatingSystem = heatingSystemRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("HeatingSystem not found"));
         return heatingSystem.getCurrentTemperature();
