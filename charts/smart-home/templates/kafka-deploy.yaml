@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.kafka.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "smart-home.appLabels" .Values.kafka | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "smart-home.appLabels" .Values.kafka | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "smart-home.appLabels" .Values.kafka | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Values.kafka.name }}-sa
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: configmap
+          configMap:
+            name: {{ .Values.kafka.name }}-config
+        - name: config
+          emptyDir: {}
+        - name: extensions
+          emptyDir: {}
+        - name: {{ .Values.kafka.name }}-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.kafka.name }}-pvc
+
+      initContainers:
+        - name: {{ .Values.kafka.name }}-init-config
+          image: solsson/kafka-initutils@sha256:c275d681019a0d8f01295dbd4a5bae3cfa945c8d0f7f685ae1f00f2579f08c7d
+          imagePullPolicy: Always
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          command: ['/bin/bash', '/etc/kafka-configmap/init.sh']
+          volumeMounts:
+            - name: configmap
+              mountPath: /etc/kafka-configmap
+            - name: config
+              mountPath: /etc/kafka
+      containers: 
+        - name: {{ .Values.kafka.name }}
+          image: {{ $.Values.kafka.image }}:{{ $.Values.kafka.tag }}
+          args: []
+          ports:
+            - name: {{ .Values.kafka.name }}-port
+              containerPort: {{ .Values.kafka.port }}
+          env: 
+            - name: KAFKA_LOG4J_OPTS
+              value: -Dlog4j.configuration=file:/etc/kafka/log4j.properties
+          command:
+            - ./bin/kafka-server-start.sh
+            - /etc/kafka/server.properties
+            - --override
+            -   zookeeper.connect=zookeeper-service:2181
+            - --override
+            -   log.retention.hours=-1
+            - --override
+            -   log.dirs=/var/lib/kafka/data/topics
+            - --override
+            -   auto.create.topics.enable=false
+          volumeMounts:
+            - name: config
+              mountPath: /etc/kafka
+            - name: extensions
+              mountPath: /opt/kafka/libs/extensions
+            - name: {{ .Values.kafka.name }}-data
+              mountPath: /var/lib/kafka/data

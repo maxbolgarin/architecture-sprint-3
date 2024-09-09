@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.commands.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "smart-home.appLabels" .Values.commands | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "smart-home.appLabels" .Values.commands | nindent 6 }}
+  template:
+    metadata:
+      name: {{ .Values.commands.name  }}
+      labels:
+        {{- include "smart-home.appLabels" .Values.commands | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.commands.name  }}
+          image: {{ $.Values.commands.image }}:{{ $.Values.commands.tag }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.commands.port }}
+          env:
+            - name: SERVER_ADDRESS
+              value: 0.0.0.0:{{ .Values.commands.port  }}
+            - name: DB_ADDRESS
+              value: {{ .Values.postgresql.name }}-service:{{ $.Values.postgresql.port }}
+            - name: DB_NAME
+              value: {{ $.Values.postgresql.database }}
+            - name: DB_USER
+              value: {{ $.Values.postgresql.user }}
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.name }}-secret
+                  key: PG_PASSWORD  
+            - name: KAFKA_ADDRESS
+              value: {{ .Values.kafka.name }}-service:{{ $.Values.kafka.port }}
+            - name: KAFKA_TOPIC
+              value: {{ .Values.commands.kafka_topic }}
+            - name: KAFKA_GROUP
+              value: {{ .Values.commands.name }}-group

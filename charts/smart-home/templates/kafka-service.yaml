@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.kafka.name }}-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "smart-home.appLabels" .Values.kafka | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+      {{- include "smart-home.appLabels" .Values.kafka | nindent 6 }}
+  ports:
+    - name: {{ .Values.kafka.name }}-port
+      targetPort: {{ .Values.kafka.name }}-port
+      port: {{ .Values.kafka.port }}

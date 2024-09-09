@@ -1,0 +1,43 @@
+commands:
+  name: commands
+  image: ghcr.io/maxbolgarin/architecture-sprint-3/commands
+  tag: latest
+  port: 7001  
+  kafka_topic: commands
+
+
+telemetry:
+  name: telemetry
+  image: ghcr.io/maxbolgarin/architecture-sprint-3/telemetry
+  tag: latest
+  port: 7002
+  kafka_topic: telemetry
+
+
+monolith:
+  name: monolith
+  image: ghcr.io/maxbolgarin/architecture-sprint-3/monolith
+  tag: latest
+  port: 7003
+  kafka_topic: commands
+
+
+postgresql:
+  name: postgresql
+  image: mirror.gcr.io/postgres
+  tag: latest
+  port: 5432
+  user: smarthome
+  pass: your_password
+  database: smart_home
+
+
+kafka:
+  name: kafka
+  image: solsson/kafka
+  tag: latest
+  port: 9092
+
+
+imagePullSecrets: 
+  - name: ghcr

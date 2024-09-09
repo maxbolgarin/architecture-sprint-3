@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.telemetry.name }}-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "smart-home.appLabels" .Values.telemetry | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+      {{- include "smart-home.appLabels" .Values.telemetry | nindent 6 }}
+  ports:
+    - name: http
+      targetPort: http
+      port: {{ .Values.telemetry.port  }}
