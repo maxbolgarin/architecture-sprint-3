@@ -15,7 +15,7 @@ import ru.yandex.practicum.smarthome.dto.HeatingSystemDto;
 import ru.yandex.practicum.smarthome.service.HeatingSystemService;
 
 @RestController
-@RequestMapping("/api/heating")
+@RequestMapping("/api/v1/heating")
 public class HeatingSystemController {
 
     private final HeatingSystemService heatingSystemService;
