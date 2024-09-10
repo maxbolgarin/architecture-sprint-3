@@ -20,6 +20,7 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      dnsPolicy: ClusterFirst
       containers:
         - name: {{ .Values.commands.name  }}
           image: {{ $.Values.commands.image }}:{{ $.Values.commands.tag }}
@@ -30,7 +31,7 @@ spec:
             - name: SERVER_ADDRESS
               value: 0.0.0.0:{{ .Values.commands.port  }}
             - name: DB_ADDRESS
-              value: {{ .Values.postgresql.name }}-service:{{ $.Values.postgresql.port }}
+              value: {{ .Values.postgresql.name }}-service.{{ .Release.Namespace }}.svc.cluster.local:{{ $.Values.postgresql.port }}
             - name: DB_NAME
               value: {{ $.Values.postgresql.database }}
             - name: DB_USER
@@ -41,7 +42,7 @@ spec:
                   name: {{ .Values.postgresql.name }}-secret
                   key: PG_PASSWORD  
             - name: KAFKA_ADDRESS
-              value: {{ .Values.kafka.name }}-service:{{ $.Values.kafka.port }}
+              value: {{ .Values.kafka.name }}-service.{{ .Release.Namespace }}.svc.cluster.local:{{ $.Values.kafka.port }}
             - name: KAFKA_TOPIC
               value: {{ .Values.commands.kafka_topic }}
             - name: KAFKA_GROUP

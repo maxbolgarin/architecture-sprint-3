@@ -28,7 +28,7 @@ spec:
               containerPort: 8080
           env:
             - name: DB_ADDRESS
-              value: {{ .Values.postgresql.name }}-service:{{ $.Values.postgresql.port }}
+              value: {{ .Values.postgresql.name }}-service.{{ .Release.Namespace }}.svc.cluster.local:{{ $.Values.postgresql.port }}
             - name: DB_NAME
               value: {{ $.Values.postgresql.database }}
             - name: DB_USER
@@ -39,8 +39,5 @@ spec:
                   name: {{ .Values.postgresql.name }}-secret
                   key: PG_PASSWORD  
             - name: KAFKA_ADDRESS
-              value: {{ .Values.kafka.name }}-service:{{ $.Values.kafka.port }}
-            - name: KAFKA_TOPIC
-              value: {{ .Values.monolith.kafka_topic }}
-            - name: KAFKA_GROUP
-              value: {{ .Values.monolith.name }}-group
+              value: {{ .Values.kafka.name }}-service.{{ .Release.Namespace }}.svc.cluster.local:{{ $.Values.kafka.port }}
+            

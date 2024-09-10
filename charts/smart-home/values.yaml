@@ -19,7 +19,6 @@ monolith:
   image: ghcr.io/maxbolgarin/architecture-sprint-3/monolith
   tag: latest
   port: 7003
-  kafka_topic: commands
 
 
 postgresql:
