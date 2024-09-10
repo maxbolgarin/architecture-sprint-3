@@ -33,6 +33,8 @@
 3. Создание топиков:
   * Commands: `kubectl exec -it $(kubectl get po -l app=kafka | tail -n 1 | awk '{print $1}') -- bin/kafka-topics.sh --create --topic commands --bootstrap-server localhost:9092`
   * Telemetry: `kubectl exec -it $(kubectl get po -l app=kafka | tail -n 1 | awk '{print $1}') -- bin/kafka-topics.sh --create --topic telemetry --bootstrap-server localhost:9092`
+4. Включение ingress в minikube: `minikube addons enable ingress`
+5. На MacOS для работы ingress - `sudo minikube tunnel`
 
 
 
