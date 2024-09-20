@@ -36,6 +36,11 @@
 4. Включение ingress в minikube: `minikube addons enable ingress`
 5. На MacOS для работы ingress - `sudo minikube tunnel`
 
+### Тестирование
+
+1. Создание Heating System устройства - `curl -XPOST -H "Content-type: application/json" -d '{"currentTemperature":0.0,"id":1,"on":false,"targetTemperature":10.0}' '127.0.0.1:80/api/v1/heating/1'`
+2. Отправка команды о включении - `curl -XPOST '127.0.0.1:80/api/v1/heating/1/turn-on'`
+3. Получение команд - `curl -XGET '127.0.0.1:80/api/v1/commands/1'`
 
 
 ## Текущее решение
