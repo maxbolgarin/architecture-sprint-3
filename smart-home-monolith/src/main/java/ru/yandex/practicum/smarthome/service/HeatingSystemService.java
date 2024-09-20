@@ -23,6 +23,16 @@ public class HeatingSystemService {
         return convertToDto(heatingSystem);
     }
 
+    public HeatingSystemDto createHeatingSystem(Long id, HeatingSystemDto heatingSystemDto) {
+        HeatingSystem newHeatingSystem = new HeatingSystem();
+        newHeatingSystem.setId(id);
+        newHeatingSystem.setOn(heatingSystemDto.isOn());
+        newHeatingSystem.setCurrentTemperature(heatingSystemDto.getCurrentTemperature());
+        newHeatingSystem.setTargetTemperature(heatingSystemDto.getTargetTemperature());
+        HeatingSystem updatedHeatingSystem = heatingSystemRepository.save(newHeatingSystem);
+        return convertToDto(updatedHeatingSystem);
+    }
+
     public HeatingSystemDto updateHeatingSystem(Long id, HeatingSystemDto heatingSystemDto) {
         HeatingSystem existingHeatingSystem = heatingSystemRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("HeatingSystem not found"));
