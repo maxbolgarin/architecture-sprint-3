@@ -1,0 +1,45 @@
+@startuml logging
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+Person(admin, "Admin")
+Person(operator, "Operator")
+System_Boundary(c1, "Backend") {
+    Container(shop, "Shop")
+    Container(shopAPI, "Shop API")
+    Container(promShop, "Promtail Shop")
+
+    Container(crm, "CRM")
+    Container(crmAPI, "CRM API")
+    Container(promCRM, "Promtail CRM")
+
+    Container(mes, "MES")
+    Container(mesAPI, "MES API")
+    Container(promMES, "Promtail MES")
+
+    Container(loki, "Loki")
+    Container(grafana, "Grafana")
+}
+
+Rel(user, shop, "Create order")
+Rel(shop, shopAPI, "Send request")
+Rel(promShop, shopAPI, "Fetch logs")
+
+Rel(admin, crm, "Get info")
+Rel(crm, crmAPI, "Send request")
+Rel(promCRM, crmAPI, "Fetch logs")
+
+Rel(operator, mes, "Change orders state")
+Rel(mes, mesAPI, "Send request")
+Rel(promMES, mesAPI, "Fetch logs")
+
+
+Rel(promShop, loki, "Send logs")
+Rel(promCRM, loki, "Send logs")
+Rel(promMES, loki, "Send logs")
+
+Rel(grafana, loki, "Fetch logs")
+
+Rel(admin, grafana, "Watch logs")
+
+@enduml

@@ -1,0 +1,34 @@
+@startuml tracing
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User")
+Person(admin, "Admin")
+Person(operator, "Operator")
+System_Boundary(c1, "Backend") {
+    Container(shop, "Shop")
+    Container(shopAPI, "Shop API")
+
+    Container(crm, "CRM")
+    Container(crmAPI, "CRM API")
+
+    Container(mes, "MES")
+    Container(mesAPI, "MES API")
+
+    Container(jaeger, "Jaeger")
+}
+
+Rel(user, shop, "Create order")
+Rel(shop, shopAPI, "Send request")
+Rel(shopAPI, jaeger, "Send trace")
+
+Rel(admin, crm, "Get info")
+Rel(crm, crmAPI, "Send request")
+Rel(crmAPI, jaeger, "Send trace")
+
+Rel(operator, mes, "Change orders state")
+Rel(mes, mesAPI, "Send request")
+Rel(mesAPI, jaeger, "Send trace")
+
+Rel(admin, jaeger, "Watch trace")
+
+@enduml
