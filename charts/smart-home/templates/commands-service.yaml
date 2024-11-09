@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.commands.name }}-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "smart-home.appLabels" .Values.commands | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+      {{- include "smart-home.appLabels" .Values.commands | nindent 6 }}
+  ports:
+    - name: http
+      targetPort: http
+      port: {{ .Values.commands.port  }}

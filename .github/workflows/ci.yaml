@@ -1,13 +1,14 @@
-name: ci
+# https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
 
-on:
-  push:
+name: Smart Home CI
+run-name: ${{ github.actor }} is running Smart Home CI 🚀
+on: [push]
 
 jobs:
   docker:
     runs-on: ubuntu-latest
     steps:
-      -
+      - 
         name: Checkout
         uses: actions/checkout@v4
       -
@@ -24,12 +25,32 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       -
-        name: Build and push
+        name: Commands - build and push 
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: micro/commands
+          push: true
+          tags: ghcr.io/maxbolgarin/architecture-sprint-3/commands:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      -
+        name: Telemetry - build and push 
+        uses: docker/build-push-action@v6
+        with:
+          platforms: linux/amd64,linux/arm64
+          context: micro/telemetry
+          push: true
+          tags: ghcr.io/maxbolgarin/architecture-sprint-3/telemetry:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      -
+        name: Monolith - build and push 
         uses: docker/build-push-action@v6
         with:
           platforms: linux/amd64,linux/arm64
           context: smart-home-monolith
           push: true
-          tags: ghcr.io/yandex-practicum/architecture-sprint-3:latest
+          tags: ghcr.io/maxbolgarin/architecture-sprint-3/monolith:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max

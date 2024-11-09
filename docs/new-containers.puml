@@ -1,0 +1,22 @@
+@startuml SmartHome_New_containers
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User", "People who want to control home")
+System_Boundary(c1, "SmartHome Backend") {
+    Container(webApp, "Web Aplication", "TypeScript,Vue3", "Provides functionallity in browsers")
+    Container(mobileApp, "Mobile Aplications", "Kotlin,Java,Swift", "Provides all functionallity on smartphones")
+
+    Container(mainBackend, "Main backend", "Java,Go,Kafka", "All logic with sensors info and commands handling")
+}
+System_Ext(sensors, "User's Sensors", "Sensors that locate inside user's home")
+
+Rel(user, webApp, "User interaction", "https")
+Rel(user, mobileApp, "User interaction", "https")
+
+Rel(webApp, mainBackend, "API calls", "http")
+Rel(mobileApp, mainBackend, "API calls", "http")
+
+Rel(sensors, mainBackend, "Get commands", "https")
+Rel(sensors, mainBackend, "Send telemetry", "https")
+
+@enduml

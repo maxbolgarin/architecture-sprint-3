@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.postgresql.name }}-service
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "smart-home.appLabels" .Values.postgresql | nindent 4 }}
+spec:
+  type: ClusterIP
+  selector:
+      {{- include "smart-home.appLabels" .Values.postgresql | nindent 6 }}
+  ports:
+    - name: {{ .Values.postgresql.name }}-port
+      targetPort: {{ .Values.postgresql.name }}-port
+      port: {{ .Values.postgresql.port }}

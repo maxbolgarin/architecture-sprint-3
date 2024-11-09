@@ -1,0 +1,157 @@
+openapi: 3.0.3
+info:
+  title: SmartHome API
+  description: |-
+    This is a SmartHome API docs
+  version: 1.0.0
+tags:
+  - name: Telemetry
+    description: Sensors telemetry
+  - name: Commands
+    description: Commands for sensors
+paths:
+  /telemetry/{device_id}/{metric_id}:
+    get:
+      tags:
+        - Telemetry
+      summary: Get device telemetry
+      description: Get device telemetry
+      parameters:
+        - name: device_id
+          in: path
+          description: ID of device
+          required: true
+          schema:
+            type: string
+        - name: metric_id
+          in: path
+          description: ID of metric
+          required: true
+          schema:
+            type: string
+        - name: from
+          in: query
+          description: UNIX timestamp from which time to get telemetry
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Telemetry'          
+        '400':
+          description: Invalid params supplied
+        '404':
+          description: Data not found
+          
+  /commands/{device_id}:
+    get:
+      tags:
+        - Commands
+      summary: Get commands for the device
+      description: Get actual commands for the device that should be send
+      parameters:
+        - name: device_id
+          in: path
+          description: ID of device
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManyCommands'          
+        '400':
+          description: Invalid params supplied
+        '404':
+          description: Data not found
+  
+  /commands/history/{device_id}:
+    get:
+      tags:
+        - Commands
+      summary: Get device historical commands 
+      description: Get device historical commands 
+      parameters:
+        - name: device_id
+          in: path
+          description: ID of device
+          required: true
+          schema:
+            type: string
+        - name: from
+          in: query
+          description: UNIX timestamp from which time to get commands
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ManyHistoryCommands'          
+        '400':
+          description: Invalid params supplied
+        '404':
+          description: Data not found
+
+components:
+  schemas:
+    Telemetry:
+      type: object
+      properties:
+        metric_name:
+          type: string
+        metric_values:
+          type: array
+          items:
+            type: object
+            properties:
+              time: 
+                type: number
+                format: unix
+              value: 
+                type: number
+
+    ManyCommands:
+      type: array
+      items:
+        type: object
+        properties:
+          command_id:
+            type: string
+          create_time: 
+            type: number
+            format: unix
+          command_type:
+            type: string
+          code:
+            type: string
+            
+    ManyHistoryCommands:
+      type: array
+      items:
+        type: object
+        properties:
+          command_id:
+            type: string
+          command_type_id:
+            type: string
+          create_time: 
+            type: number
+            format: unix
+          send_time: 
+            type: number
+            format: unix
+          command_type:
+            type: string
+          code:
+            type: string

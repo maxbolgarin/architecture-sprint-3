@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.telemetry.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "smart-home.appLabels" .Values.telemetry | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "smart-home.appLabels" .Values.telemetry | nindent 6 }}
+  template:
+    metadata:
+      name: {{ .Values.telemetry.name  }}
+      labels:
+        {{- include "smart-home.appLabels" .Values.telemetry | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      dnsPolicy: ClusterFirst
+      containers:
+        - name: {{ .Values.telemetry.name  }}
+          image: {{ $.Values.telemetry.image }}:{{ $.Values.telemetry.tag }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.telemetry.port }}
+          env:
+            - name: SERVER_ADDRESS
+              value: 0.0.0.0:{{ .Values.telemetry.port  }}
+            - name: DB_ADDRESS
+              value: {{ .Values.postgresql.name }}-service.{{ .Release.Namespace }}.svc.cluster.local:{{ $.Values.postgresql.port }}
+            - name: DB_NAME
+              value: {{ $.Values.postgresql.database }}
+            - name: DB_USER
+              value: {{ $.Values.postgresql.user }}
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.name }}-secret
+                  key: PG_PASSWORD  
+            - name: KAFKA_ADDRESS
+              value: {{ .Values.kafka.name }}-service.{{ .Release.Namespace }}.svc.cluster.local:{{ $.Values.kafka.port }}
+            - name: KAFKA_TOPIC
+              value: {{ .Values.telemetry.kafka_topic }}
+            - name: KAFKA_GROUP
+              value: {{ .Values.telemetry.name }}-group

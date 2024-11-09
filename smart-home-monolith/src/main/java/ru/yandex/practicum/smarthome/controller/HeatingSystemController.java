@@ -1,6 +1,5 @@
 package ru.yandex.practicum.smarthome.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -16,18 +15,28 @@ import ru.yandex.practicum.smarthome.dto.HeatingSystemDto;
 import ru.yandex.practicum.smarthome.service.HeatingSystemService;
 
 @RestController
-@RequestMapping("/api/heating")
-@RequiredArgsConstructor
+@RequestMapping("/api/v1/heating")
 public class HeatingSystemController {
 
     private final HeatingSystemService heatingSystemService;
 
     private static final Logger logger = LoggerFactory.getLogger(HeatingSystemController.class);
 
+    public HeatingSystemController(HeatingSystemService heatingSystemService) {
+        this.heatingSystemService = heatingSystemService;
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<HeatingSystemDto> getHeatingSystem(@PathVariable("id") Long id) {
         logger.info("Fetching heating system with id {}", id);
         return ResponseEntity.ok(heatingSystemService.getHeatingSystem(id));
+    }
+
+    @PostMapping("/{id}")
+    public ResponseEntity<HeatingSystemDto> createHeatingSystem(@PathVariable("id") Long id,
+                                                                @RequestBody HeatingSystemDto heatingSystemDto) {
+        logger.info("Creating heating system with id {}", id);
+        return ResponseEntity.ok(heatingSystemService.createHeatingSystem(id, heatingSystemDto));
     }
 
     @PutMapping("/{id}")

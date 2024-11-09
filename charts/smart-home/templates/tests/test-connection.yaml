@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ .Values.monolith.name }}-test-connection
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "smart-home.appLabels" .Values.monolith | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ .Values.monolith.name }}-service:{{ .Values.monolith.port }}']
+  restartPolicy: Never

@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.postgresql.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "smart-home.appLabels" .Values.postgresql | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "smart-home.appLabels" .Values.postgresql | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "smart-home.appLabels" .Values.postgresql | nindent 8 }}
+    spec: 
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: {{ .Values.postgresql.name }}-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.postgresql.name }}-pvc
+        - name: initsql
+          configMap:
+            name: {{ .Values.postgresql.name }}-cm-initdb
+            items:
+            - key: init.sql
+              path: init.sql    
+      containers:
+        - name: {{ .Values.postgresql.name }}
+          image: {{ $.Values.postgresql.image }}:{{ $.Values.postgresql.tag }}
+          ports:
+            - name: {{ .Values.postgresql.name }}-port
+              containerPort: {{ .Values.postgresql.port }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ $.Values.postgresql.database }}
+            - name: POSTGRES_USER
+              value: {{ $.Values.postgresql.user }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.name }}-secret
+                  key: PG_PASSWORD  
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata 
+       
+          volumeMounts:
+            - name: {{ .Values.postgresql.name }}-data
+              mountPath: /var/lib/postgresql/data
+            - name: initsql             
+              mountPath: /docker-entrypoint-initdb.d/init.sql
+              subPath: init.sql

@@ -63,6 +63,12 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Kafka -->
+        <dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -99,6 +105,7 @@
                     </excludes>
                 </configuration>
             </plugin>
+            
         </plugins>
     </build>
 </project>
